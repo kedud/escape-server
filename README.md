@@ -17,7 +17,7 @@ After starting the database for the first time, user's credentials need to be cr
  - Run mongo client : `mongo -u admin -p` and enter the admin password
  (admin credentials are set in the docker-compose.yml file, default are admin:password)
  - Create a new user (for the Python server):
- `db.createUser({user: 'apiuser', pwd: 'apipassword', roles: [{role: 'readWrite', db: 'webapp'}]}) `
+ `db.createUser({user: 'apiuser', pwd: 'apipassword', roles: [{role: 'readWrite', db: 'nodes'}]}) `
  - Ask your boss to reward you for this hard work.
  - Go have a beer with the interns.
 
