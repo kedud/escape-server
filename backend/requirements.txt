@@ -3,3 +3,5 @@ gunicorn==20.0.4
 flask_pymongo
 flask_restful
 flask-cors
+flask-socketio
+requests
