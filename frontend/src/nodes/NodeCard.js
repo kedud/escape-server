@@ -33,7 +33,8 @@ export class NodeCard extends React.Component {
     		let json = JSON.parse(node);
 
             this.setState({ 
-		    	"last_ping": new Date(json.last_ping), 
+		    	"last_ping": new Date(json.last_ping),
+		    	"status": json.status,
 			});
         });
 
@@ -58,6 +59,18 @@ export class NodeCard extends React.Component {
                     title={<TextField record={record} source="hostname" />}
                     subheader={<TextField record={record} source="url" />}
                 />
+               	<CardContent>
+                {
+                	this.state.status == "resolved"? 
+                	(
+                		<Chip label={ this.state.status } variant="default" />
+                	) 
+                	:
+                	(
+                		<Chip label={ this.state.status } variant="default" color="secondary"/>
+            		)	
+                }
+                </CardContent>
                 <CardContent>
                 {
                 	this.state.current_time - this.state.last_ping < 2000 ? 

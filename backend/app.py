@@ -102,6 +102,7 @@ def register():
         data["last_ping"] = datetime.datetime.now()
         data["ip"] = ip
         data["url"] = 'http://' + ip
+        data["status"] = "unsolved"
         if hostname:
             if mongo.db.nodes.find_one({"hostname": hostname}):
                 mongo.db.nodes.update({'hostname': hostname}, {'$set': data})
@@ -127,8 +128,41 @@ def alive(hostname):
                 "hostname": node["hostname"],
                 "last_ping": node["last_ping"],
                 "ip": node["ip"],
-                "url": node["url"]
+                "url": node["url"],
+                "status": node["status"]
             }
+            print (json.dumps(client_node, default=str))
+            socketio.emit(node["hostname"], json.dumps(client_node, default=str))
+            return {"response": "node already exists."}
+        else:
+            data = {"response": "node not found"}
+            return jsonify(data)
+
+    else:
+        data = {"response": "ERROR"}
+        return jsonify(data)
+
+@app.route('/<hostname>/update', methods=['POST'])
+def update(hostname):
+    print("update: " +  hostname)
+    data = request.get_json()
+    print(data)
+    if hostname:
+        node = mongo.db.nodes.find_one({"hostname": hostname})
+        if node:
+            node["last_ping"] = datetime.datetime.now()
+            #node["ip"] = request.remote_addr
+            node["status"] = data["status"]
+            mongo.db.nodes.update_one({'hostname': hostname}, {'$set': node})
+            client_node = { 
+                "hostname": node["hostname"],
+                "last_ping": node["last_ping"],
+                "ip": node["ip"],
+                "url": node["url"],
+                "status": data["status"]
+            }
+            if hostname:
+                r = requests.get(node["url"] + '/actuate')
             print (json.dumps(client_node, default=str))
             socketio.emit(node["hostname"], json.dumps(client_node, default=str))
             return {"response": "node already exists."}
