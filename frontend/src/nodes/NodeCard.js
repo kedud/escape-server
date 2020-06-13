@@ -24,6 +24,7 @@ export class NodeCard extends React.Component {
         console.log(props.record.last_ping);
         this.state = { 
 		    "last_ping": new Date(props.record.last_ping), 
+		    "types": [],
 		  };
        
     } 
@@ -35,6 +36,7 @@ export class NodeCard extends React.Component {
             this.setState({ 
 		    	"last_ping": new Date(json.last_ping),
 		    	"status": json.status,
+		    	"types": json.types ? json.types : [],
 			});
         });
 
@@ -85,13 +87,29 @@ export class NodeCard extends React.Component {
                 	
                 </CardContent>
                 <CardActions style={{ textAlign: 'right' }}>
-                	<Button 
-                		variant="contained" 
-                		color="primary"
-                		onClick={() => this.handleButtonClick('action', record)}
-                	>
-                		Action
-                	</Button>
+                { 
+                	this.state.types.includes("actuator") ? 
+                	(
+                		<Button 
+	                		variant="contained" 
+	                		color="primary"
+	                		onClick={() => this.handleButtonClick('action', record)}
+                		>
+	                		Action
+	                	</Button>
+                	)
+                	:
+                	(
+                		<Button 
+	                		variant="contained" 
+	                		color="primary"
+	                		disabled
+	                		onClick={() => this.handleButtonClick('action', record)}
+                		>
+	                		Action
+	                	</Button>
+                	)
+            	}
                 	<Button 
                 		variant="contained" 
                 		color="secondary"

@@ -49,24 +49,36 @@ class Nodes(Resource):
             return jsonify({"response": data})
 
     def post(self):
-        data = request.get_json()
-        if not data:
-            data = {"response": "ERROR"}
-            return jsonify(data)
+        node_data = request.get_json()
+        if not node_data:
+            node_data = {"response": "ERROR"}
+            return jsonify(node_data)
         else:
-            id = data.get('id')
-            data["last_ping"] = datetime.datetime.now()
-            if id:
-                if mongo.db.nodes.find_one({"id": id}):
-                    mongo.db.nodes.update({'id': id}, {'$set': data})
-                    return {"response": "node already exists."}
+            hostname = node_data.get('hostname')
+            node_data["last_ping"] = datetime.datetime.now()
+            node_data["url"] = 'http://' + node_data['ip']
+            if hostname:
+                if mongo.db.nodes.find_one({'hostname': hostname}):
+                    mongo.db.nodes.update({'hostname': hostname}, {'$set': node_data})
 
                 else:
-                    mongo.db.nodes.insert(data)
+                    mongo.db.nodes.insert(node_data)
+
+                client_node = { 
+                    "hostname": node_data["hostname"],
+                    "last_ping": node_data["last_ping"],
+                    "ip": node_data["ip"],
+                    "url": node_data["url"],
+                    "status": node_data["status"],
+                    "types": node_data["types"]
+                }
+                print (json.dumps(client_node, default=str))
+                socketio.emit(node_data["hostname"], json.dumps(client_node, default=str))
+                return {"response": "node updated."}
             else:
                 return {"response": "id number missing"}
 
-        return redirect(url_for("nodes"))
+        return {"response": "updated"}
 
     def put(self, id):
         data = request.get_json()
@@ -82,10 +94,12 @@ class Nodes(Resource):
 class Index(Resource):
     def get(self):
         return redirect(url_for("nodes"))
+    def post(self):
+        return redirect(url_for("nodes"))
 
 
 api = Api(app)
-api.add_resource(Index, "/", endpoint="index")
+api.add_resource(Nodes, "/", endpoint="index")
 api.add_resource(Nodes, "/node", endpoint="nodes")
 api.add_resource(Nodes, "/node/<string:hostname>", endpoint="hostname")
 
