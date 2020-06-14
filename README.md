@@ -2,7 +2,7 @@
 
 ## TODO
  - Hire a new intern
- - Ask him to write the README
+ - Ask him to write the README (because that's all you left him !)
 
 ## How to build
 
@@ -19,7 +19,8 @@ After starting the database for the first time, user's credentials need to be cr
  - Create a new user (for the Python server):
  `db.createUser({user: 'apiuser', pwd: 'apipassword', roles: [{role: 'readWrite', db: 'nodes'}]}) `
  - Ask your boss to reward you for this hard work.
- - Go have a beer with the interns.
+ - Go have a beer with the interns. <3
+ - When ?
 
 To rebuild containers (when editing the server for instance):
 

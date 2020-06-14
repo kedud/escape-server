@@ -10,7 +10,7 @@ class NodeGrid extends React.Component {
         return (
             <div style={{ margin: '1em' }}>
             {ids.map(id =>
-                <NodeCard id={id} record={data[id]} basePath={ basePath }/>
+                <NodeCard id={id} key={id} record={data[id]} basePath={ basePath }/>
             )}
             </div>
         );
