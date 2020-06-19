@@ -21,7 +21,6 @@ export class NodeCard extends React.Component {
 
     constructor(props) {
         super(props)
-        console.log(props.record.last_ping);
         this.state = { 
 		    "last_ping": new Date(props.record.last_ping), 
 		    "types": [],
@@ -32,9 +31,8 @@ export class NodeCard extends React.Component {
     componentDidMount() {
     	subscribeToNode(this.props.id, (err, node) => {
     		let json = JSON.parse(node);
-
             this.setState({ 
-		    	"last_ping": new Date(json.last_ping),
+		    	"last_ping": new Date(json.last_ping * 1000),
 		    	"status": json.status,
 		    	"types": json.types ? json.types : [],
 			});
