@@ -5,7 +5,7 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import { Button, Chip } from '@material-ui/core';
 
-import { TextField, DateField } from "react-admin";
+import { TextField } from "react-admin";
 
 import { subscribeToNode, sendActionEvent } from '../api/socketIO';
 
@@ -53,17 +53,16 @@ export class NodeCard extends React.Component {
     }
 
     render() {
-        let { id, basePath } = this.props;
         let { record } = this.props;
         return (
-            <Card key={id} style={cardStyle}>
+            <Card style={cardStyle}>
                 <CardHeader
                     title={<TextField record={record} source="hostname" />}
                     subheader={<TextField record={record} source="url" />}
                 />
                	<CardContent>
                 {
-                	this.state.status == "resolved"? 
+                	this.state.status === "resolved"? 
                 	(
                 		<Chip label={ this.state.status } variant="default" />
                 	) 
@@ -73,19 +72,21 @@ export class NodeCard extends React.Component {
             		)	
                 }
                 </CardContent>
-                <CardContent>
-                {
-                	this.state.current_time - this.state.last_ping < 2000 ? 
-                	(
-                		<Chip label={(this.state.current_time - this.state.last_ping)} variant="default" />
-                	) 
-                	:
-                	(
-                		<Chip label={(this.state.current_time - this.state.last_ping)} variant="default" color="secondary"/>
-            		)	
-                }
-                	
-                </CardContent>
+								{ this.state.current_time && this.state.last_ping && (
+									<CardContent>
+									{
+										this.state.current_time - this.state.last_ping < 2000 ? 
+										(
+											<Chip label={(this.state.current_time - this.state.last_ping)} variant="default" />
+										) 
+										:
+										(
+											<Chip label={(this.state.current_time - this.state.last_ping)} variant="default" color="secondary"/>
+									)	
+									}
+										
+									</CardContent>
+								)}
                 <CardActions style={{ textAlign: 'right' }}>
                 { 
                 	this.state.types.includes("actuator") ? 
