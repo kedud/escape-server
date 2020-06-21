@@ -22,7 +22,8 @@ export class NodeCard extends React.Component {
     constructor(props) {
         super(props)
         this.state = { 
-		    "last_ping": new Date(props.record.last_ping), 
+			"last_ping": new Date(props.record.last_ping), 
+			status: "unknown",
 		    "types": [],
 		  };
        

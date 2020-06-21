@@ -47,68 +47,65 @@ def actuate(hostname):
 
 
 class Nodes(Resource):
+    
+    def get_one_node_data(self, hostname):
+        data = []
+        Node = Query()
+        cursor = db.search(Node.hostname == hostname)
+        for node in cursor:
+            node["id"] = node["hostname"]
+            data.append(node)
+        return data
+
+    def get_all_nodes_data(self):
+        data = []
+        cursor = db.all()
+        for node in cursor:
+            print(node)
+            node["id"] = node["hostname"]
+            data.append(node)
+        return data
+
     def get(self, hostname=None):
         data = []
         if hostname:
-            Node = Query()
-            cursor = db.search(Node.hostname == hostname)
-            for node in cursor:
-                #node['url'] = APP_URL + url_for('nodes') + "/" + node.get('id')
-                node["id"] = node["hostname"]
-                data.append(node)
-
-            return jsonify({"hostname": hostname, "response": data})
+            return jsonify({"hostname": hostname, "response": get_one_node_data(hostname)})
 
         else:
-            cursor = db.all()
-            for node in cursor:
-                print(node)
-                #node['url'] = APP_URL + url_for('nodes') + "/" + node.get('id')
-                node["id"] = node["hostname"]
-                data.append(node)
+            data = get_all_nodes_data()
             print(data)
             return jsonify({"response": data})
 
     def post(self):
         node_data = request.get_json()
+
         if not node_data:
             node_data = {"response": "ERROR"}
             return jsonify(node_data)
+
+        hostname = node_data.get('hostname')
+        node_data["last_ping"] = int(datetime.datetime.now().timestamp())
+        node_data["url"] = 'http://' + node_data['ip']
+        if not hostname:
+            return {"response": "id number missing"}
+            
+        Node = Query()
+        if db.search(Node.hostname == hostname):
+            db.update(node_data ,Node.hostname == hostname)
         else:
-            hostname = node_data.get('hostname')
-            node_data["last_ping"] = int(datetime.datetime.now().timestamp())
-            node_data["url"] = 'http://' + node_data['ip']
-            Node = Query()
-            if hostname:
-                if db.search(Node.hostname == hostname):
-                    db.update(node_data ,Node.hostname == hostname)
-                    #mongo.db.nodes.update({'hostname': hostname}, {'$set': node_data})
+            db.insert(node_data)
 
-                else:
-                    db.insert(node_data)
-                    #mongo.db.nodes.insert(node_data)
-
-                client_node = { 
-                    "hostname": node_data["hostname"],
-                    "last_ping": node_data["last_ping"],
-                    "ip": node_data["ip"],
-                    "url": node_data["url"],
-                    "status": node_data["status"],
-                    "types": node_data["types"]
-                }
-                print (json.dumps(client_node, default=str))
-                socketio.emit(node_data["hostname"], json.dumps(client_node, default=str))
-                return {"response": "node updated."}
-            else:
-                return {"response": "id number missing"}
-
-        return {"response": "updated"}
-
-    # def put(self, id):
-    #     data = request.get_json()
-    #     data["last_ping"] = datetime.datetime.now()
-    #     mongo.db.nodes.update({'id': id}, {'$set': data})
-    #     return redirect(url_for("nodes"))
+        client_node = { 
+            "hostname": node_data["hostname"],
+            "last_ping": node_data["last_ping"],
+            "ip": node_data["ip"],
+            "url": node_data["url"],
+            "status": node_data["status"],
+            "types": node_data["types"]
+        }
+        print (json.dumps(client_node, default=str))
+        socketio.emit(node_data["hostname"], json.dumps(client_node, default=str))
+        return {"response": "node updated."}
 
     def delete(self, id):
         Node = Query()
@@ -128,31 +125,25 @@ api.add_resource(Nodes, "/", endpoint="index")
 api.add_resource(Nodes, "/node", endpoint="nodes")
 api.add_resource(Nodes, "/node/<string:hostname>", endpoint="hostname")
 
+def add_unique_test_sensor_to_db(sensor_name):
+    test_sensor =  { 
+        "hostname": "test_" + sensor_name,
+        "url": "http://127.0.0.1:5000/node/"+sensor_name, 
+        "last_ping": 0,
+        "status": "resolved"
+        }
+    db.remove(Node.hostname == test_sensor["hostname"])
+    db.insert(test_sensor)
+
+
 @app.before_first_request
 def startup():
-    test_sensor =  { 
-        "hostname": "test_sensor1",
-        "url": "http://127.0.0.1:5000/node/sensor1", 
-        "last_ping": 0
-        }
-    db.insert(test_sensor)
-    
-    # mongo.db.nodes.update(
-    #     {"hostname": "sensor2"},
-    #     { 
-    #     "hostname": "sensor2",
-    #     "url": "http://127.0.0.1:5000/node/sensor2", 
-    #     "last_ping": datetime.datetime.now()},
-    #     upsert=True
-    # )
-    # mongo.db.nodes.update(
-    #     {"hostname": "sensor3"},
-    #     { 
-    #     "hostname": "sensor3",
-    #     "url": "http://127.0.0.1:5000/node/sensor3", 
-    #     "last_ping": datetime.datetime.now()},
-    #     upsert=True
-    # )
+    Node = Query()
+
+    add_unique_test_sensor_to_db("sensor1")
+    add_unique_test_sensor_to_db("sensor2")
+    add_unique_test_sensor_to_db("sensor3")
+
     print("fake nodes created")
     print(scenario.nodes)
     check_scenario("cat")
@@ -187,4 +178,3 @@ def socketio_action(data):
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
-    #app.run(debug=True)

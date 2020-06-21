@@ -1,7 +1,7 @@
 import { fetchUtils } from 'react-admin';
 import { stringify } from 'query-string';
 
-const apiUrl = 'http://localhost:5000';
+const apiUrl = 'http://' + window.location.hostname + ':5000';
 const httpClient = fetchUtils.fetchJson;
 
 export default {
@@ -18,10 +18,11 @@ export default {
         return httpClient(url).then(({ headers, json }) => {
             console.log(json);
             return ({
-            data: json.response,
-            total: 1,//json.length,
-            //total: parseInt(headers.get('content-range').split('/').pop(), 10),
-        })}
+                data: json.response,
+                total: 1,//json.length,
+                //total: parseInt(headers.get('content-range').split('/').pop(), 10),
+            })
+        }
         );
     },
 
@@ -65,7 +66,7 @@ export default {
 
     updateMany: (resource, params) => {
         const query = {
-            filter: JSON.stringify({ id: params.ids}),
+            filter: JSON.stringify({ id: params.ids }),
         };
         return httpClient(`${apiUrl}/${resource}?${stringify(query)}`, {
             method: 'PUT',
@@ -88,7 +89,7 @@ export default {
 
     deleteMany: (resource, params) => {
         const query = {
-            filter: JSON.stringify({ id: params.ids}),
+            filter: JSON.stringify({ id: params.ids }),
         };
         return httpClient(`${apiUrl}/${resource}?${stringify(query)}`, {
             method: 'DELETE',
