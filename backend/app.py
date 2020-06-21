@@ -12,7 +12,6 @@ import requests
 import datetime
 import os
 import json
-import scenario
 from bson import json_util
 
 app = Flask(__name__)
@@ -25,11 +24,11 @@ socketio.init_app(app, cors_allowed_origins="*")
 
 APP_URL = "http://127.0.0.1:5000"
 
-def isASensor(node_json):
+def is_a_sensor(node_json):
     return "sensor" in node_json["types"]
 
 
-def isSolved(node_json):
+def is_solved(node_json):
     return node_json["status"] == "solved"
 
 
@@ -117,7 +116,7 @@ class Nodes(Resource):
         print (json.dumps(client_node, default=str))
         socketio.emit(node_data["hostname"], json.dumps(client_node, default=str))
         
-        if isASensor(client_node) and isSolved(client_node):
+        if is_a_sensor(client_node) and is_solved(client_node):
             execute_scenario_for(client_node["hostname"])
 
         return {"response": "node updated."}
