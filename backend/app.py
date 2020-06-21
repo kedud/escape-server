@@ -25,16 +25,27 @@ socketio.init_app(app, cors_allowed_origins="*")
 
 APP_URL = "http://127.0.0.1:5000"
 
-def check_scenario(hostname=None):
-    for node in scenario.nodes:
-        print(node["hostname"])
-        if node["hostname"] == hostname:
-            print("actuate")
-            if (node["trigger"]):
-                actuate(node["trigger"])
-            return
-    return
-#    if nodeName && nodes[nodeName] :
+def isASensor(node_json):
+    return "sensor" in node_json["types"]
+
+
+def isSolved(node_json):
+    return node_json["status"] == "solved"
+
+
+def execute_scenario_for(sensor_hostname=None):
+
+    scenarios_json = None
+    with open("scenarios.json", "r") as f:
+        scenarios_json = json.load(f)
+
+    scenarios = scenarios_json["scenarios"]
+
+    for scenario in scenarios:
+        if scenario["sensor_solved"] == sensor_hostname:
+            if (scenario["actuator_triggered"]):
+                actuate(scenario["actuator_triggered"])
+
 
 def actuate(hostname):
     if hostname:
@@ -91,7 +102,7 @@ class Nodes(Resource):
             
         Node = Query()
         if db.search(Node.hostname == hostname):
-            db.update(node_data ,Node.hostname == hostname)
+            db.update(node_data, Node.hostname == hostname)
         else:
             db.insert(node_data)
 
@@ -105,6 +116,10 @@ class Nodes(Resource):
         }
         print (json.dumps(client_node, default=str))
         socketio.emit(node_data["hostname"], json.dumps(client_node, default=str))
+        
+        if isASensor(client_node) and isSolved(client_node):
+            execute_scenario_for(client_node["hostname"])
+
         return {"response": "node updated."}
 
     def delete(self, id):

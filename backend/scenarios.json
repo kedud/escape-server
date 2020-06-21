@@ -1,18 +1,24 @@
-
-nodes = [
-	{
-		"hostname": "clock",
-		"type": "sensor",
-		"trigger": "drawer",
-	},
-	{
-		"hostname": "door-knock",
-		"type": "actuator",
-		"trigger": "drawer",
-	},
-	{
-		"hostname": "cat",
-		"type": "actuator",
-		"trigger": "drawer",
-	}
-]
+{
+    "scenarios": [
+        {
+            "sensor_solved": "clock",
+            "actuator_triggered": "clock-drawer"
+        },
+        {
+            "sensor_solved": "musicbox",
+            "actuator_triggered": "musicbox-drawer"
+        },
+        {
+            "sensor_solved": "gesture-sensor",
+            "actuator_triggered": "figure-plotter"
+        },
+        {
+            "sensor_solved": "keypad-and-knock",
+            "actuator_triggered": "keypad-and-knock"
+        },
+        {
+            "sensor_solved": "mushrooms",
+            "actuator_triggered": "cat"
+        }
+    ]
+}
