@@ -101,7 +101,7 @@ class Nodes(Resource):
             
         Node = Query()
         nodes = db.search(Node.hostname == hostname)
-        was_solved = false
+        was_solved = False
         if len(nodes) > 0:
             node = nodes[0]
             was_solved = is_solved(node)
