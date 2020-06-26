@@ -164,8 +164,6 @@ def startup():
     add_unique_test_sensor_to_db("sensor3")
 
     print("fake nodes created")
-    print(scenario.nodes)
-    check_scenario("cat")
 
 @socketio.on('connect')
 def onSocketIoConnect():
