@@ -150,6 +150,7 @@ def add_unique_test_sensor_to_db(sensor_name):
         "last_ping": 0,
         "status": "resolved"
         }
+    Node = Query()
     db.remove(Node.hostname == test_sensor["hostname"])
     db.insert(test_sensor)
 
