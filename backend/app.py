@@ -12,7 +12,6 @@ import requests
 import datetime
 import os
 import json
-from bson import json_util
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
