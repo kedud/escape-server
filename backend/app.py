@@ -193,4 +193,4 @@ def socketio_action(data):
             r = requests.get(q[0]["url"] + '/reboot')
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=True, host="0.0.0.0")
