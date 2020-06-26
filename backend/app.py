@@ -31,7 +31,6 @@ def is_a_sensor(node_json):
 def is_solved(node_json):
     return node_json["status"] == "solved"
 
-
 def execute_scenario_for(sensor_hostname=None):
 
     scenarios_json = None
@@ -96,11 +95,16 @@ class Nodes(Resource):
         hostname = node_data.get('hostname')
         node_data["last_ping"] = int(datetime.datetime.now().timestamp())
         node_data["url"] = 'http://' + node_data['ip']
+
         if not hostname:
             return {"response": "id number missing"}
             
         Node = Query()
-        if db.search(Node.hostname == hostname):
+        nodes = db.search(Node.hostname == hostname)
+        was_solved = false
+        if len(nodes) > 0:
+            node = nodes[0]
+            was_solved = is_solved(node)
             db.update(node_data, Node.hostname == hostname)
         else:
             db.insert(node_data)
@@ -116,7 +120,7 @@ class Nodes(Resource):
         print (json.dumps(client_node, default=str))
         socketio.emit(node_data["hostname"], json.dumps(client_node, default=str))
         
-        if is_a_sensor(client_node) and is_solved(client_node):
+        if is_a_sensor(client_node) and is_solved(client_node) and not was_solved:
             execute_scenario_for(client_node["hostname"])
 
         return {"response": "node updated."}
@@ -184,11 +188,10 @@ def socketio_action(data):
     hostname = data["hostname"]
     print(hostname)
     if hostname:
-        node = mongo.db.nodes.find_one({"hostname": hostname})
-        if node:
-            print(node)
-            r = requests.get(node["url"] + '/reboot')
-            print(r)
+        Node = Query()
+        q = db.search(Node.hostname == hostname)
+        if len(q) > 0 :
+            r = requests.get(q[0]["url"] + '/reboot')
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
