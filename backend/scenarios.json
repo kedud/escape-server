@@ -17,6 +17,10 @@
             "actuator_triggered": "keypad-and-knock"
         },
         {
+            "sensor_solved": "door-knock-and-wardrobe",
+            "actuator_triggered": "door-knock-and-wardrobe"
+        },
+        {
             "sensor_solved": "mushrooms",
             "actuator_triggered": "cat"
         }
