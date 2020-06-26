@@ -78,10 +78,10 @@ class Nodes(Resource):
     def get(self, hostname=None):
         data = []
         if hostname:
-            return jsonify({"hostname": hostname, "response": get_one_node_data(hostname)})
+            return jsonify({"hostname": hostname, "response": self.get_one_node_data(hostname)})
 
         else:
-            data = get_all_nodes_data()
+            data = self.get_all_nodes_data()
             print(data)
             return jsonify({"response": data})
 
