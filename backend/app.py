@@ -14,12 +14,14 @@ import datetime
 import os
 import json
 
-from threading import lock
+from threading import Lock
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 db = TinyDB(os.environ['PROJECT_PATH'] + 'nodes.json')
+lock = Lock()
+
 
 socketio = SocketIO(app)
 socketio.init_app(app, cors_allowed_origins="*")
