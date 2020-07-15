@@ -17,7 +17,7 @@ import json
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
-db = TinyDB('./nodes.json')
+db = TinyDB(os.environ(['PROJECT_PATH']) + 'nodes.json')
 
 socketio = SocketIO(app)
 socketio.init_app(app, cors_allowed_origins="*")
@@ -34,7 +34,7 @@ def is_solved(node_json):
 def execute_scenario_for(sensor_hostname=None):
 
     scenarios_json = None
-    with open("scenarios.json", "r") as f:
+    with open(os.environ(['PROJECT_PATH']) + "scenarios.json", "r") as f:
         scenarios_json = json.load(f)
 
     scenarios = scenarios_json["scenarios"]
