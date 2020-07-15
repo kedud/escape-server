@@ -47,12 +47,13 @@ def execute_scenario_for(sensor_hostname=None):
 
 def actuate(hostname):
     if hostname:
-        query = Query()
-        node = db.search(query.hostname == hostname)
-        if len(node):
-            print(node[0])
-            r = requests.get(node[0]["url"] + '/actuate')
-            print(r)
+        with transaction(db) as tr:
+            query = Query()
+            node = db.search(query.hostname == hostname)
+            if len(node):
+                print(node[0])
+                r = requests.get(node[0]["url"] + '/actuate')
+                print(r)
 
 
 class Nodes(Resource):
@@ -60,9 +61,8 @@ class Nodes(Resource):
     def get_one_node_data(self, hostname):
         data = []
         cursor = None
-        with transaction(db) as tr:
-            Node = Query()
-            cursor = tr.search(Node.hostname == hostname)
+        Node = Query()
+        cursor = tr.search(Node.hostname == hostname)
 
         for node in cursor:
             node["id"] = node["hostname"]
@@ -105,7 +105,7 @@ class Nodes(Resource):
             
         with transaction(db) as tr:
             Node = Query()
-            nodes = tr.search(Node.hostname == hostname)
+            nodes = db.search(Node.hostname == hostname)
             was_solved = False
             if len(nodes) > 0:
                 node = nodes[0]
@@ -195,7 +195,7 @@ def socketio_action(data):
         q = []
         with transaction(db) as tr:
             Node = Query()
-            q = tr.search(Node.hostname == hostname)
+            q = db.search(Node.hostname == hostname)
 
         if len(q) > 0 :
             r = requests.get(q[0]["url"] + '/reboot')
