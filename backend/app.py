@@ -5,6 +5,7 @@ from flask_restful import Api, Resource
 from flask_cors import CORS
 
 from tinydb import TinyDB, Query
+from tinyrecord import transaction
 
 from flask_socketio import SocketIO, emit
 import requests
@@ -58,11 +59,15 @@ class Nodes(Resource):
     
     def get_one_node_data(self, hostname):
         data = []
-        Node = Query()
-        cursor = db.search(Node.hostname == hostname)
+        cursor = None
+        with transaction(db) as tr:
+            Node = Query()
+            cursor = tr.search(Node.hostname == hostname)
+
         for node in cursor:
             node["id"] = node["hostname"]
             data.append(node)
+
         return data
 
     def get_all_nodes_data(self):
@@ -98,15 +103,16 @@ class Nodes(Resource):
         if not hostname:
             return {"response": "id number missing"}
             
-        Node = Query()
-        nodes = db.search(Node.hostname == hostname)
-        was_solved = False
-        if len(nodes) > 0:
-            node = nodes[0]
-            was_solved = is_solved(node)
-            db.update(node_data, Node.hostname == hostname)
-        else:
-            db.insert(node_data)
+        with transaction(db) as tr:
+            Node = Query()
+            nodes = tr.search(Node.hostname == hostname)
+            was_solved = False
+            if len(nodes) > 0:
+                node = nodes[0]
+                was_solved = is_solved(node)
+                tr.update(node_data, Node.hostname == hostname)
+            else:
+                tr.insert(node_data)
 
         client_node = { 
             "hostname": node_data["hostname"],
@@ -125,8 +131,10 @@ class Nodes(Resource):
         return {"response": "node updated."}
 
     def delete(self, id):
-        Node = Query()
-        db.remove(Node.id == id)
+        with transaction(db) as tr:
+            Node = Query()
+            tr.remove(Node.id == id)
+
         return redirect(url_for("nodes"))
 
 
@@ -149,19 +157,17 @@ def add_unique_test_sensor_to_db(sensor_name):
         "last_ping": 0,
         "status": "resolved"
         }
-    Node = Query()
-    db.remove(Node.hostname == test_sensor["hostname"])
-    db.insert(test_sensor)
+    with transaction(db) as tr:
+        Node = Query()
+        tr.remove(Node.hostname == test_sensor["hostname"])
+        tr.insert(test_sensor)
 
 
 @app.before_first_request
 def startup():
-    Node = Query()
-
     add_unique_test_sensor_to_db("sensor1")
     add_unique_test_sensor_to_db("sensor2")
     add_unique_test_sensor_to_db("sensor3")
-
     print("fake nodes created")
 
 @socketio.on('connect')
@@ -186,8 +192,11 @@ def socketio_action(data):
     hostname = data["hostname"]
     print(hostname)
     if hostname:
-        Node = Query()
-        q = db.search(Node.hostname == hostname)
+        q = []
+        with transaction(db) as tr:
+            Node = Query()
+            q = tr.search(Node.hostname == hostname)
+
         if len(q) > 0 :
             r = requests.get(q[0]["url"] + '/reboot')
 
