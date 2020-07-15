@@ -77,7 +77,7 @@ class Nodes(Resource):
 
     def get_all_nodes_data(self):
         data = []
-        with node :
+        with lock:
             cursor = db.all()
             for node in cursor:
                 print(node)
