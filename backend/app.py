@@ -14,6 +14,8 @@ import datetime
 import os
 import json
 
+from threading import lock
+
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -47,7 +49,7 @@ def execute_scenario_for(sensor_hostname=None):
 
 def actuate(hostname):
     if hostname:
-        with transaction(db) as tr:
+        with lock:
             query = Query()
             node = db.search(query.hostname == hostname)
             if len(node):
@@ -61,8 +63,9 @@ class Nodes(Resource):
     def get_one_node_data(self, hostname):
         data = []
         cursor = None
-        Node = Query()
-        cursor = tr.search(Node.hostname == hostname)
+        with lock:
+            Node = Query()
+            cursor = db.search(Node.hostname == hostname)
 
         for node in cursor:
             node["id"] = node["hostname"]
@@ -72,11 +75,12 @@ class Nodes(Resource):
 
     def get_all_nodes_data(self):
         data = []
-        cursor = db.all()
-        for node in cursor:
-            print(node)
-            node["id"] = node["hostname"]
-            data.append(node)
+        with node :
+            cursor = db.all()
+            for node in cursor:
+                print(node)
+                node["id"] = node["hostname"]
+                data.append(node)
         return data
 
     def get(self, hostname=None):
@@ -103,16 +107,16 @@ class Nodes(Resource):
         if not hostname:
             return {"response": "id number missing"}
             
-        with transaction(db) as tr:
+        with lock:
             Node = Query()
             nodes = db.search(Node.hostname == hostname)
             was_solved = False
             if len(nodes) > 0:
                 node = nodes[0]
                 was_solved = is_solved(node)
-                tr.update(node_data, Node.hostname == hostname)
+                db.update(node_data, Node.hostname == hostname)
             else:
-                tr.insert(node_data)
+                db.insert(node_data)
 
         client_node = { 
             "hostname": node_data["hostname"],
@@ -131,9 +135,9 @@ class Nodes(Resource):
         return {"response": "node updated."}
 
     def delete(self, id):
-        with transaction(db) as tr:
+        with lock:
             Node = Query()
-            tr.remove(Node.id == id)
+            db.remove(Node.id == id)
 
         return redirect(url_for("nodes"))
 
@@ -157,10 +161,10 @@ def add_unique_test_sensor_to_db(sensor_name):
         "last_ping": 0,
         "status": "resolved"
         }
-    with transaction(db) as tr:
+    with lock:
         Node = Query()
-        tr.remove(Node.hostname == test_sensor["hostname"])
-        tr.insert(test_sensor)
+        db.remove(Node.hostname == test_sensor["hostname"])
+        db.insert(test_sensor)
 
 
 @app.before_first_request
@@ -193,7 +197,7 @@ def socketio_action(data):
     print(hostname)
     if hostname:
         q = []
-        with transaction(db) as tr:
+        with lock:
             Node = Query()
             q = db.search(Node.hostname == hostname)
 
