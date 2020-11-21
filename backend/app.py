@@ -45,18 +45,30 @@ def execute_scenario_for(sensor_hostname=None):
 
     for scenario in scenarios:
         if scenario["sensor_solved"] == sensor_hostname:
-            if (scenario["actuator_triggered"]):
+            print("!! ACTUATOR TRIGGERED !!")
+            if "actuator_triggered" in scenario.keys():
                 actuate(scenario["actuator_triggered"])
+            elif  "actuators" in scenario.keys():
+                for actuator in scenario["actuators"]:
+                    if "param" in actuator.keys():
+                        actuate(actuator["hostname"], actuator["param"])
+                    else:
+                        actuate(actuator["hostname"])
 
 
-def actuate(hostname):
+def actuate(hostname, data=None):
     if hostname:
         with lock:
             query = Query()
             node = db.search(query.hostname == hostname)
             if len(node):
                 print(node[0])
-                r = requests.get(node[0]["url"] + '/actuate')
+                if data is not None:
+                    headers = {"Content-type": "application/json"}
+                    r = requests.post(node[0]["url"] + '/actuate', json=data, headers=headers)
+
+                else:
+                    r = requests.post(node[0]["url"] + '/actuate')
                 print(r)
 
 
