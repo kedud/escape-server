@@ -5,7 +5,7 @@ backups_directory="escape-server-backups"
 echo "1/3. Backing up current 'escape-server' directory on rasperry pi..."
 sshpass -p 'raspberry' ssh pi@raspberrypi.local "
 mkdir -p $backups_directory;
-tar -czf $backups_directory/\$(date +%F_%H-%M-%S).tar.gz escape-server;
+tar -czf $backups_directory/\$(date +%F_%Hh%Mm%Ss).tar.gz escape-server;
 "
 
 echo "2/3. Delete current 'escape-server' directory on raspberry pi..."
