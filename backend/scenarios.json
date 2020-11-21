@@ -30,6 +30,12 @@
         {
             "sensor_solved": "mushrooms",
             "actuator_triggered": "cat"
+        },
+        {
+            "sensor_solved": "light-switch-sensor",
+            "actuators": [{
+                "hostname": "room-light-controller"
+            }]
         }
     ]
 }
