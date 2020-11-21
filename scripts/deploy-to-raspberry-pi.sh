@@ -1,3 +1,4 @@
+#!/bin/bash
 
 backups_directory="escape-server-backups"
 
