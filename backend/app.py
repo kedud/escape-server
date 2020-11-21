@@ -183,9 +183,9 @@ def add_unique_test_sensor_to_db(sensor_name):
 
 @app.before_first_request
 def startup():
-    add_unique_test_sensor_to_db("sensor1")
-    add_unique_test_sensor_to_db("sensor2")
-    add_unique_test_sensor_to_db("sensor3")
+    # add_unique_test_sensor_to_db("sensor1")
+    # add_unique_test_sensor_to_db("sensor2")
+    # add_unique_test_sensor_to_db("sensor3")
     print("fake nodes created")
 
 @socketio.on('connect')
