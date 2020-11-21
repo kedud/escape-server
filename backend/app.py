@@ -28,12 +28,14 @@ socketio.init_app(app, cors_allowed_origins="*")
 
 APP_URL = "http://127.0.0.1:5000"
 
+
 def is_a_sensor(node_json):
     return "sensor" in node_json["types"]
 
 
 def is_solved(node_json):
     return node_json["status"] == "solved"
+
 
 def execute_scenario_for(sensor_hostname=None):
 
@@ -48,7 +50,7 @@ def execute_scenario_for(sensor_hostname=None):
             print("!! ACTUATOR TRIGGERED !!")
             if "actuator_triggered" in scenario.keys():
                 actuate(scenario["actuator_triggered"])
-            elif  "actuators" in scenario.keys():
+            elif "actuators" in scenario.keys():
                 for actuator in scenario["actuators"]:
                     if "param" in actuator.keys():
                         actuate(actuator["hostname"], actuator["param"])
@@ -65,7 +67,8 @@ def actuate(hostname, data=None):
                 print(node[0])
                 if data is not None:
                     headers = {"Content-type": "application/json"}
-                    r = requests.post(node[0]["url"] + '/actuate', json=data, headers=headers)
+                    r = requests.post(
+                        node[0]["url"] + '/actuate', json=data, headers=headers)
 
                 else:
                     r = requests.post(node[0]["url"] + '/actuate')
@@ -73,7 +76,7 @@ def actuate(hostname, data=None):
 
 
 class Nodes(Resource):
-    
+
     def get_one_node_data(self, hostname):
         data = []
         cursor = None
@@ -120,7 +123,7 @@ class Nodes(Resource):
 
         if not hostname:
             return {"response": "id number missing"}
-            
+
         with lock:
             Node = Query()
             nodes = db.search(Node.hostname == hostname)
@@ -132,7 +135,7 @@ class Nodes(Resource):
             else:
                 db.insert(node_data)
 
-        client_node = { 
+        client_node = {
             "hostname": node_data["hostname"],
             "last_ping": node_data["last_ping"],
             "ip": node_data["ip"],
@@ -140,9 +143,10 @@ class Nodes(Resource):
             "status": node_data["status"],
             "types": node_data["types"]
         }
-        print (json.dumps(client_node, default=str))
-        socketio.emit(node_data["hostname"], json.dumps(client_node, default=str))
-        
+        print(json.dumps(client_node, default=str))
+        socketio.emit(node_data["hostname"],
+                      json.dumps(client_node, default=str))
+
         if is_a_sensor(client_node) and is_solved(client_node) and not was_solved:
             execute_scenario_for(client_node["hostname"])
 
@@ -159,6 +163,7 @@ class Nodes(Resource):
 class Index(Resource):
     def get(self):
         return redirect(url_for("nodes"))
+
     def post(self):
         return redirect(url_for("nodes"))
 
@@ -168,13 +173,14 @@ api.add_resource(Nodes, "/", endpoint="index")
 api.add_resource(Nodes, "/node", endpoint="nodes")
 api.add_resource(Nodes, "/node/<string:hostname>", endpoint="hostname")
 
+
 def add_unique_test_sensor_to_db(sensor_name):
-    test_sensor =  { 
+    test_sensor = {
         "hostname": "test_" + sensor_name,
-        "url": "http://127.0.0.1:5000/node/"+sensor_name, 
+        "url": "http://127.0.0.1:5000/node/"+sensor_name,
         "last_ping": 0,
         "status": "resolved"
-        }
+    }
     with lock:
         Node = Query()
         db.remove(Node.hostname == test_sensor["hostname"])
@@ -188,13 +194,16 @@ def startup():
     # add_unique_test_sensor_to_db("sensor3")
     print("fake nodes created")
 
+
 @socketio.on('connect')
 def onSocketIoConnect():
     print('Client connected')
 
+
 @socketio.on('disconnect')
 def onSocketIoDisconnect():
     print('Client disconnected')
+
 
 @socketio.on('action')
 def socketio_action(data):
@@ -215,8 +224,9 @@ def socketio_action(data):
             Node = Query()
             q = db.search(Node.hostname == hostname)
 
-        if len(q) > 0 :
+        if len(q) > 0:
             r = requests.get(q[0]["url"] + '/reboot')
+
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, host="0.0.0.0")
