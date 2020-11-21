@@ -6,15 +6,33 @@
         },
         {
             "sensor_solved": "musicbox",
-            "actuator_triggered": "musicbox-drawer"
-        },
+            "actuators": 
+	    [
+		    {
+			    "hostname": "musicbox-drawer"
+		    },
+		    {
+			    "hostname": "keypad-and-knock",
+			    "param" : 
+			    {
+				    "pattern":
+				    [
+					    200,
+					    200
+				    ]
+			    }
+		    }
+	    ]
+	},
         {
             "sensor_solved": "gesture-sensor",
-            "actuator_triggered": "figure-plotter"
-        },
-        {
-            "sensor_solved": "keypad-and-knock",
-            "actuator_triggered": "keypad-and-knock"
+            "actuators":
+	    [
+
+		    {"hostname": "figure-plotter"},
+		    {"hostname": "gesture-sensor"}
+	    ]
+
         },
         {
             "sensor_solved": "door-knock-and-wardrobe",
