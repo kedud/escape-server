@@ -1,38 +1,27 @@
 {
-    "scenarios": [
-        {
+    "scenarios": [{
             "sensor_solved": "clock",
             "actuator_triggered": "clock-drawer"
         },
         {
             "sensor_solved": "musicbox",
-            "actuators": 
-	    [
-		    {
-			    "hostname": "musicbox-drawer"
-		    },
-		    {
-			    "hostname": "keypad-and-knock",
-			    "param" : 
-			    {
-				    "pattern":
-				    [
-					    200,
-					    200
-				    ]
-			    }
-		    }
-	    ]
-	},
+            "actuators": [{
+                    "hostname": "musicbox-drawer"
+                },
+                {
+                    "hostname": "keypad-and-knock",
+                    "param": {
+                        "pattern": [200, 200]
+                    }
+                }
+            ]
+        },
         {
             "sensor_solved": "gesture-sensor",
-            "actuators":
-	    [
-
-		    {"hostname": "figure-plotter"},
-		    {"hostname": "gesture-sensor"}
-	    ]
-
+            "actuators": [
+                { "hostname": "figure-plotter" },
+                { "hostname": "gesture-sensor" }
+            ]
         },
         {
             "sensor_solved": "door-knock-and-wardrobe",
