@@ -8,7 +8,7 @@ mkdir -p $backups_directory;
 tar -czf $backups_directory/\$(date +%F_%H-%M-%S).tar.gz escape-server;
 "
 
-echo "Delete current 'escape-server' directory"
+echo "Delete current 'escape-server' directory on raspberry pi"
 sshpass -p 'raspberry' ssh pi@raspberrypi.local "
 sudo rm -rf escape-server;"
 
