@@ -19,7 +19,7 @@ from threading import Lock
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
-db = TinyDB(os.environ['PROJECT_PATH'] + 'nodes.json')
+db = TinyDB(os.environ["PROJECT_PATH"] + "nodes.json")
 lock = Lock()
 
 
@@ -40,7 +40,7 @@ def is_solved(node_json):
 def execute_scenario_for(sensor_hostname=None):
 
     scenarios_json = None
-    with open(os.environ['PROJECT_PATH'] + "scenarios.json", "r") as f:
+    with open(os.environ["PROJECT_PATH"] + "scenarios.json", "r") as f:
         scenarios_json = json.load(f)
 
     scenarios = scenarios_json["scenarios"]
@@ -68,15 +68,15 @@ def actuate(hostname, data=None):
                 if data is not None:
                     headers = {"Content-type": "application/json"}
                     r = requests.post(
-                        node[0]["url"] + '/actuate', json=data, headers=headers)
+                        node[0]["url"] + "/actuate", json=data, headers=headers
+                    )
 
                 else:
-                    r = requests.post(node[0]["url"] + '/actuate')
+                    r = requests.post(node[0]["url"] + "/actuate")
                 print(r)
 
 
 class Nodes(Resource):
-
     def get_one_node_data(self, hostname):
         data = []
         cursor = None
@@ -103,7 +103,9 @@ class Nodes(Resource):
     def get(self, hostname=None):
         data = []
         if hostname:
-            return jsonify({"hostname": hostname, "response": self.get_one_node_data(hostname)})
+            return jsonify(
+                {"hostname": hostname, "response": self.get_one_node_data(hostname)}
+            )
 
         else:
             data = self.get_all_nodes_data()
@@ -117,9 +119,9 @@ class Nodes(Resource):
             node_data = {"response": "ERROR"}
             return jsonify(node_data)
 
-        hostname = node_data.get('hostname')
+        hostname = node_data.get("hostname")
         node_data["last_ping"] = int(datetime.datetime.now().timestamp())
-        node_data["url"] = 'http://' + node_data['ip']
+        node_data["url"] = "http://" + node_data["ip"]
 
         if not hostname:
             return {"response": "id number missing"}
@@ -141,11 +143,10 @@ class Nodes(Resource):
             "ip": node_data["ip"],
             "url": node_data["url"],
             "status": node_data["status"],
-            "types": node_data["types"]
+            "types": node_data["types"],
         }
         print(json.dumps(client_node, default=str))
-        socketio.emit(node_data["hostname"],
-                      json.dumps(client_node, default=str))
+        socketio.emit(node_data["hostname"], json.dumps(client_node, default=str))
 
         if is_a_sensor(client_node) and is_solved(client_node) and not was_solved:
             execute_scenario_for(client_node["hostname"])
@@ -177,9 +178,9 @@ api.add_resource(Nodes, "/node/<string:hostname>", endpoint="hostname")
 def add_unique_test_sensor_to_db(sensor_name):
     test_sensor = {
         "hostname": "test_" + sensor_name,
-        "url": "http://127.0.0.1:5000/node/"+sensor_name,
+        "url": "http://127.0.0.1:5000/node/" + sensor_name,
         "last_ping": 0,
-        "status": "resolved"
+        "status": "resolved",
     }
     with lock:
         Node = Query()
@@ -195,17 +196,17 @@ def startup():
     print("fake nodes created")
 
 
-@socketio.on('connect')
+@socketio.on("connect")
 def onSocketIoConnect():
-    print('Client connected')
+    print("Client connected")
 
 
-@socketio.on('disconnect')
+@socketio.on("disconnect")
 def onSocketIoDisconnect():
-    print('Client disconnected')
+    print("Client disconnected")
 
 
-@socketio.on('action')
+@socketio.on("action")
 def socketio_action(data):
     print(data)
     hostname = data["hostname"]
@@ -213,7 +214,7 @@ def socketio_action(data):
     actuate(hostname)
 
 
-@socketio.on('reboot')
+@socketio.on("reboot")
 def socketio_action(data):
     print(data)
     hostname = data["hostname"]
@@ -225,7 +226,7 @@ def socketio_action(data):
             q = db.search(Node.hostname == hostname)
 
         if len(q) > 0:
-            r = requests.get(q[0]["url"] + '/reboot')
+            r = requests.get(q[0]["url"] + "/reboot")
 
 
 if __name__ == "__main__":
