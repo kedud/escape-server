@@ -15,7 +15,11 @@ sudo rm -rf escape-server;"
 
 CURRENT_GIT_DIRECTORY=`git rev-parse --show-toplevel`
 
+mv $CURRENT_GIT_DIRECTORY/frontend/node_modules $CURRENT_GIT_DIRECTORY/..
+
 echo "3/3. Copying current git respository to rasperry pi..."
-sshpass -p $RASPBERRYPI_PASSWORD scp -r $CURRENT_GIT_DIRECTORY pi@raspberrypi.local:/home/pi
+sshpass -p $RASPBERRYPI_PASSWORD scp -C -r $CURRENT_GIT_DIRECTORY pi@raspberrypi.local:/home/pi
+
+mv $CURRENT_GIT_DIRECTORY/../node_modules $CURRENT_GIT_DIRECTORY/frontend/
 
 echo "DONE"
