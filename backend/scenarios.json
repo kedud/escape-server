@@ -1,10 +1,10 @@
 {
     "scenarios": [{
-            "sensor_solved": "clock",
-            "actuator_triggered": "clock-drawer"
+            "hostname": "clock",
+            "actuators": [{ "hostname": "clock-drawer" }]
         },
         {
-            "sensor_solved": "musicbox",
+            "hostname": "musicbox",
             "actuators": [{
                     "hostname": "musicbox-drawer"
                 },
@@ -17,25 +17,48 @@
             ]
         },
         {
-            "sensor_solved": "gesture-sensor",
+            "hostname": "gesture-sensor",
             "actuators": [
                 { "hostname": "figure-plotter" },
                 { "hostname": "gesture-sensor" }
             ]
         },
         {
-            "sensor_solved": "door-knock-and-wardrobe",
-            "actuator_triggered": "door-knock-and-wardrobe"
+            "hostname": "door-knock-and-wardrobe",
+            "actuators": [{ "hostname": "door-knock-and-wardrobe" }]
         },
         {
-            "sensor_solved": "mushrooms",
-            "actuator_triggered": "cat"
-        },
-        {
-            "sensor_solved": "light-switch-sensor",
+            "hostname": "mushrooms",
+            "actuators": [{ "hostname": "cat" }]
+        }
+    ],
+    "switches": [{
+            "hostname": "light-switch-sensor",
             "actuators": [{
                 "hostname": "room-light-controller"
-            }]
+            }],
+            "overriden": {
+                "by": "manual-light-switch-sensor",
+                "when": {
+                    "hostname": "manual-light-switch-sensor",
+                    "key": "is_on",
+                    "value": true
+                }
+            }
+        },
+        {
+            "hostname": "manual-light-switch-sensor",
+            "actuators": [{
+                "hostname": "room-light-controller"
+            }],
+            "overriden": {
+                "by": "light-switch-sensor",
+                "when": {
+                    "hostname": "manual-light-switch-sensor",
+                    "key": "is_on",
+                    "value": false
+                }
+            }
         }
     ]
 }

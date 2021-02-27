@@ -32,30 +32,47 @@ APP_URL = "http://127.0.0.1:5000"
 def is_a_sensor(node_json):
     return "sensor" in node_json["types"]
 
+def is_a_switch(node_json):
+    return "switch" in node_json["types"]
 
 def is_solved(node_json):
     return node_json["status"] == "solved"
 
-
-def execute_scenario_for(sensor_hostname=None):
-
-    scenarios_json = None
+def search_scenarios(hostname):
     with open(os.environ["PROJECT_PATH"] + "scenarios.json", "r") as f:
         scenarios_json = json.load(f)
 
-    scenarios = scenarios_json["scenarios"]
+    switches = scenarios_json["switches"]
+    for switch in switches:
+        if switch["hostname"] == hostname:
+            return switch
 
+    scenarios = scenarios_json["scenarios"]
     for scenario in scenarios:
-        if scenario["sensor_solved"] == sensor_hostname:
-            print("!! ACTUATOR TRIGGERED !!")
-            if "actuator_triggered" in scenario.keys():
-                actuate(scenario["actuator_triggered"])
-            elif "actuators" in scenario.keys():
-                for actuator in scenario["actuators"]:
-                    if "param" in actuator.keys():
-                        actuate(actuator["hostname"], actuator["param"])
-                    else:
-                        actuate(actuator["hostname"])
+        if scenario["hostname"] == hostname:
+            return scenario
+
+    return None
+
+def execute_scenario_for(hostname):
+    print("!! ACTUATOR TRIGGERED !!")
+
+    scenario = search_scenarios(hostname=hostname)
+
+    if "overridden" in scenario:
+        condition_hostname = search_scenarios(hostname=scenario["overridden"]["when"]["hostname"])
+        
+        if condition_hostname[scenario["overridden"]["when"]["key"]] == scenario["overridden"]["when"]["value"]:
+            overriding_scenario = search_scenarios(scenario["overridden"]["by"])
+            scenario = overriding_scenario
+
+    for actuator in scenario["actuators"]:
+        payload = scenario.copy()
+
+        if "param" in actuator.keys():
+            payload.update(actuator["param"])
+
+        actuate(actuator["hostname"], data=payload)
 
 
 def actuate(hostname, data=None):
@@ -66,9 +83,8 @@ def actuate(hostname, data=None):
             if len(node):
                 print(node[0])
                 if data is not None:
-                    headers = {"Content-type": "application/json"}
                     r = requests.post(
-                        node[0]["url"] + "/actuate", json=data, headers=headers
+                        node[0]["url"] + "/actuate", json=data, headers={"Content-type": "application/json"}
                     )
 
                 else:
@@ -145,10 +161,15 @@ class Nodes(Resource):
             "status": node_data["status"],
             "types": node_data["types"],
         }
+        if "is_on" in node_data:
+            client_node["is_on"] = node_data["is_on"]
+
         print(json.dumps(client_node, default=str))
         socketio.emit(node_data["hostname"], json.dumps(client_node, default=str))
 
         if is_a_sensor(client_node) and is_solved(client_node) and not was_solved:
+            execute_scenario_for(client_node["hostname"])
+        elif is_a_switch(client_node):
             execute_scenario_for(client_node["hostname"])
 
         return {"response": "node updated."}
